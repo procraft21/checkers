@@ -30,6 +30,7 @@ class Board {
         std::vector<Move> allMoves();
         std::vector<Move> forcedMoves();
         RatedMove bestMove(int depth);
+        bool getTurn() {return turn;};
 };
 
 #endif

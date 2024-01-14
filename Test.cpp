@@ -11,15 +11,21 @@ int main() {
     // p[5][3] = white;
     // Board b = Board(p);
     b.print();
-    std::vector moves = b.allMoves();
+    std::vector<Move> moves = b.allMoves();
     int i = 0;
     while (moves.size() > 0) {
-        Move m = b.bestMove(4).move;
-        b.makeMove(m);
+        i++;
+        // if (i == 5)
+        //     Debug::printInBestMove = true;
+        RatedMove m = b.bestMove(6);
+        b.makeMove(m.move);
         moves = b.forcedMoves();
-        std::cout<<"From: ("<<m.start.x<<", "<<m.start.y<<") To: ("<<m.end.x<<", "<<m.end.y<<")"<<m.eat<<"\n";
+        std::cout<<"Move "<<i<<" - ";
+        Debug::printMove(m.move);
+        std::cout<<"Played by "<<(b.getTurn()?"black":"white")<< " and rated "<<m.value<<"\n";
         b.print();
         std::cout<<"\n";
     }
+    std::cout<<RND::getFloat();
     return 0;
 }
