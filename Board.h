@@ -18,11 +18,12 @@ class Board {
         bool turn = true;
         std::vector<Move> combos;
         std::vector<Move> possibleCombos(int i, int j);
+        const float posVals[7] = {1.25, 1.1, 1, 1.075, 1.15, 1.225, 1.3};
     public:
         Board(Piece copy[][4]);
         Board();
         ~Board() {}
-        int value();
+        float value();
         void print();
         /// @brief Makes a move on the board
         /// @param m The move (presumed legal)

@@ -26,20 +26,18 @@ Board::Board() {
     }
 }
 
-int Board::value() {
-    int val = 0;
+float Board::value() {
+    float val = 0;
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 4; j++) {
-            if (board[i][j] != 0) {
-                if (board[i][j] == white)
-                    val++;
-                else if (board[i][j] == black)
-                    val--;
-                else if (board[i][j] == whiteQueen)
-                    val += 2;
-                else if (board[i][j] == blackQueen)
-                    val -= 2;
-            }
+            if (board[i][j] == white)
+                val += posVals[7-i];
+            else if (board[i][j] == black)
+                val -= posVals[i];
+            else if (board[i][j] == whiteQueen)
+                val += 2;
+            else if (board[i][j] == blackQueen)
+                val -= 2;
         }
     }
     return val;
@@ -158,13 +156,6 @@ std::vector<Move> Board::forcedMoves() {
     if (combos.size() > 0) {
         std::vector<Move> temp = combos;
         combos.clear();
-        if (Debug::printInMoves) {
-            std::cout<<"\n";
-            print();
-            for (Move m : temp) 
-                Debug::printMove(m);
-            std::cout<<"\n";
-        }
         return temp;
     }
     std::vector<Move> normalMoves;
@@ -195,6 +186,28 @@ std::vector<Move> Board::forcedMoves() {
                             eatingMoves.push_back(Move(j, i, j-1, i-2));
                     }
                 }
+                if (board[i][j] == whiteQueen && i < 7) {
+                    if (i % 2) {
+                        if (board[i+1][j] == empty)
+                            normalMoves.push_back(Move(j, i, j, i+1));
+                        else if (i < 6 && j > 0 && (board[i+1][j] == black || board[i+1][j] == blackQueen) && board[i+2][j-1] == empty)
+                            eatingMoves.push_back(Move(j, i, j-1, i+2));
+                        if (j < 3 && board[i+1][j+1] == empty)
+                            normalMoves.push_back(Move(j, i, j+1, i+1));
+                        else if (i < 6 && j < 3 && (board[i+1][j+1] == black || board[i+1][j+1] == blackQueen) && board[i+2][j+1] == empty)
+                            eatingMoves.push_back(Move(j, i, j+1, i+2));
+                    }
+                    else {
+                        if (board[i+1][j] == empty)
+                            normalMoves.push_back(Move(j, i, j, i+1));
+                        else if (i < 6 && j < 3 && (board[i+1][j] == black || board[i+1][j] == blackQueen) && board[i+2][j+1] == empty)
+                            eatingMoves.push_back(Move(j, i, j+1, i+2));
+                        if (j > 0 && board[i+1][j-1] == empty)
+                            normalMoves.push_back(Move(j, i, j-1, i+1));
+                        else if (i < 6 && j > 0 && (board[i+1][j-1] == black || board[i+1][j-1] == blackQueen) && board[i+2][j-1] == empty)
+                            eatingMoves.push_back(Move(j, i, j-1, i+2));
+                    }
+                }
             }
             else {
                 if ((board[i][j] == black || board[i][j] == blackQueen) && i < 7) {
@@ -219,19 +232,32 @@ std::vector<Move> Board::forcedMoves() {
                             eatingMoves.push_back(Move(j, i, j-1, i+2));
                     }
                 }
+                if (board[i][j] == blackQueen && i > 0) {
+                    if (i % 2) {
+                        if (board[i-1][j] == empty)
+                            normalMoves.push_back(Move(j, i, j, i-1));
+                        else if (i > 1 && j > 0 && (board[i-1][j] == white || board[i-1][j] == whiteQueen) && board[i-2][j-1] == empty)
+                            eatingMoves.push_back(Move(j, i, j-1, i-2));
+                        if (j < 3 && board[i-1][j+1] == empty)
+                            normalMoves.push_back(Move(j, i, j+1, i-1));
+                        else if (i > 1 && j < 3 && (board[i-1][j+1] == white || board[i-1][j+1] == whiteQueen) && board[i-2][j+1] == empty)
+                            eatingMoves.push_back(Move(j, i, j+1, i-2));
+                    }
+                    else {
+                        if (board[i-1][j] == empty)
+                            normalMoves.push_back(Move(j, i, j, i-1));
+                        else if (i > 1 && j < 3 && (board[i-1][j] == white || board[i-1][j] == whiteQueen) && board[i-2][j+1] == empty)
+                            eatingMoves.push_back(Move(j, i, j+1, i-2));
+                        if (j > 0 && board[i-1][j-1] == empty)
+                            normalMoves.push_back(Move(j, i, j-1, i-1));
+                        else if (i > 1 && j > 0 && (board[i-1][j-1] == white || board[i-1][j-1] == whiteQueen) && board[i-2][j-1] == empty)
+                            eatingMoves.push_back(Move(j, i, j-1, i-2));
+                    }
+                }
             }
         }
     }
     
-    if (Debug::printInMoves) {
-        std::cout<<"\n";
-        print();
-        for (Move m : normalMoves) 
-            Debug::printMove(m);
-        for (Move m : eatingMoves) 
-            Debug::printMove(m);
-        std::cout<<"\n";
-    }
     if (eatingMoves.size() == 0)
         return normalMoves;
     return eatingMoves;
@@ -254,6 +280,20 @@ std::vector<Move> Board::possibleCombos(int i, int j) {
                     moves.push_back(Move(j, i, j-1, i-2));
             }
         }
+        if (board[i][j] == whiteQueen && i < 6) {
+            if (i % 2) {
+                if (j > 0 && (board[i+1][j] == black || board[i+1][j] == blackQueen) && board[i+2][j-1] == empty)
+                    moves.push_back(Move(j, i, j-1, i+2));
+                if (j < 3 && (board[i+1][j+1] == black || board[i+1][j+1] == blackQueen) && board[i+2][j+1] == empty)
+                    moves.push_back(Move(j, i, j+1, i+2));
+            }
+            else {
+                if (j < 3 && (board[i+1][j] == black || board[i+1][j] == blackQueen) && board[i+2][j+1] == empty)
+                    moves.push_back(Move(j, i, j+1, i+2));
+                if (j > 0 && (board[i+1][j-1] == black || board[i+1][j-1] == blackQueen) && board[i+2][j-1] == empty)
+                    moves.push_back(Move(j, i, j-1, i+2));
+            }
+        }
     }
     else {
         if ((board[i][j] == black || board[i][j] == blackQueen) && i < 6) {
@@ -270,28 +310,31 @@ std::vector<Move> Board::possibleCombos(int i, int j) {
                     moves.push_back(Move(j, i, j-1, i+2));
             }
         }
+        if (board[i][j] == blackQueen && i > 1) {
+            if (i % 2) {
+                if (j > 0 && (board[i-1][j] == white || board[i-1][j] == whiteQueen) && board[i-2][j-1] == empty)
+                    moves.push_back(Move(j, i, j-1, i-2));
+                if (j < 3 && (board[i-1][j+1] == white || board[i-1][j+1] == whiteQueen) && board[i-2][j+1] == empty)
+                    moves.push_back(Move(j, i, j+1, i-2));
+            }
+            else {
+                if (j < 3 && (board[i-1][j] == white || board[i-1][j] == whiteQueen) && board[i-2][j+1] == empty)
+                    moves.push_back(Move(j, i, j+1, i-2));
+                if (j > 0 && (board[i-1][j-1] == white || board[i-1][j-1] == whiteQueen) && board[i-2][j-1] == empty)
+                    moves.push_back(Move(j, i, j-1, i-2));
+            }
+        }
     }
-    if (Debug::printInMoves) {
-        std::cout<<"\n";
-        print();
-        std::cout<<"\nsize: "<<moves.size();
-        for (Move m : moves)
-            Debug::printMove(m);
-        std::cout<<"\n";
-    }
+    
     return moves;
 }
 
 RatedMove Board::bestMove(int depth) {
     float best = -1000;
     RatedMove *curBestMove = nullptr;
-    if (Debug::prog == 10 && depth == 0)
-        Debug::printInMoves = true;
-    else if (Debug::prog > 10 && depth == 0)
-        Debug::printInMoves = false;
     std::vector<Move> moves = forcedMoves();
     if (moves.size() == 0) 
-        return RatedMove(Move::emptyMove, value()*30);
+        return RatedMove(Move::emptyMove, (turn ? 1 : -1)*value()*30);
 
     if (depth > 0) {
         for (Move m : moves) {
@@ -304,30 +347,7 @@ RatedMove Board::bestMove(int depth) {
             Piece eater = board[m.start.y][m.start.x];
             bool curTurn = turn;
             bool shouldBeFine = true;
-            if (Debug::printInBestMove && depth == 3) {
-                std::cout<<"Testing: ";
-                Debug::printMove(m);
-                print();
-            }
-            // if (m.start.x == 2 && m.start.y == 7 && m.end.x == 2 && m.end.y == 6)
-            //     Debug::inner = true;
-            // if (board[7][0] == empty && board[7][1] == empty) {
-            //     Debug::printMove(m);
-            //     std::cout<<"before move at depth "<<depth<<"\n";
-            //     std::cout<<"\n";
-            //     shouldBeFine = false;
-            // }
             makeMove(m);
-            if (depth == 1 && Debug::prog == 10) {
-                Debug::printMove(m);
-                print();
-                std::cout<<"\n";
-            }
-            // if (board[7][0] == empty && board[7][1] == empty) {
-            //     Debug::printMove(m);
-            //     std::cout<<"after move at depth "<<depth<<"\n";
-            //     std::cout<<"\n";
-            // }
             RatedMove cur = RatedMove(m, bestMove(depth-1).value);
             if (m.eat) 
                 board[(m.start.y + m.end.y)/2]
@@ -339,17 +359,6 @@ RatedMove Board::bestMove(int depth) {
             turn = curTurn;
             board[m.start.y][m.start.x] = eater;
             board[m.end.y][m.end.x] = empty;
-            // if (board[7][0] == empty && board[7][1] == empty && shouldBeFine) {
-            //     Debug::printMove(m);
-            //     std::cout<<"after undoing move at depth "<<depth<<"\n";
-            //     std::cout<<"\n";
-            // }
-            if (Debug::printInBestMove && depth == 3) {
-                std::cout<<"After undoing: ";
-                Debug::printMove(m);
-                print();
-                Debug::printInBestMove = false;
-            }
             if (cur.value > best) {
                 RatedMove temp = cur;
                 curBestMove = &temp;
@@ -358,10 +367,6 @@ RatedMove Board::bestMove(int depth) {
         }
     }
     else {
-        if (Debug::inner) {
-            std::cout<<"\nCHECKING IN BRANCH NUMBER: "<<++Debug::prog<<"\n";
-            std::cout<<"\n";
-        }
         for (Move m : moves) {
             Piece eaten;
             if (m.eat) 
@@ -371,13 +376,6 @@ RatedMove Board::bestMove(int depth) {
                                m.start.x : m.end.x];
             Piece eater = board[m.start.y][m.start.x];
             bool curTurn = turn;
-            if (Debug::inner && Debug::prog == 11) {
-                std::cout<<"Trying move (inner): ";
-                Debug::printMove(m);
-                std::cout<<(eater == 0 ? "_" : "p")<<" == "<<(board[m.start.y][m.start.x] == 0 ? "_" : "p");
-                print();
-                std::cout<<"\n";
-            }
             makeMove(m);
             combos.clear();
             RatedMove cur = RatedMove(m, value() * (turn ? 1 : -1) + RND::getFloat()*0.2-0.1);
@@ -391,13 +389,6 @@ RatedMove Board::bestMove(int depth) {
             turn = curTurn;
             board[m.start.y][m.start.x] = eater;
             board[m.end.y][m.end.x] = empty;
-            if (Debug::inner && Debug::prog == 11) {
-                std::cout<<"After undoing move (inner): ";
-                Debug::printMove(m);
-                std::cout<<(eater == 0 ? "_" : "p")<<"\n";
-                print();
-                std::cout<<"\n";
-            }
             if (cur.value > best) {
                 best = cur.value;
                 RatedMove temp = cur;

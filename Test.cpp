@@ -15,9 +15,7 @@ int main() {
     int i = 0;
     while (moves.size() > 0) {
         i++;
-        // if (i == 5)
-        //     Debug::printInBestMove = true;
-        RatedMove m = b.bestMove(6);
+        RatedMove m = b.bestMove(5);
         b.makeMove(m.move);
         moves = b.forcedMoves();
         std::cout<<"Move "<<i<<" - ";
