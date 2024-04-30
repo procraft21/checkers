@@ -6,7 +6,7 @@ const double elbowAngles[8][4];
 const double wristAngles[8][4];
 const double shoulderAngles[8][4];
 
-double elbowAngle = Math.PI;
+double elbowAngle = 0;
 
 void setup() {
     pinMode(magnet, OUTPUT);
@@ -28,12 +28,31 @@ void setup() {
 void loop() {
 }
 
+void move(int columnFrom, int rowFrom, int columnTo, int rowTo) {
+    goToPosition(columnFrom, rowFrom);
+    lowerWrist(columnFrom, rowTo);
+    digitalWrite(magnet, HIGH);
+    reset();
+    goToPosition(columnTo, rowTo);
+    lowerWrist(columnTo, rowTo);
+    digitalWrite(magnet, LOW);
+    reset();
+    if (rowFrom-rowTo == 2 || rowTo-rowFrom == -2) {
+        move((columnFrom+columnTo)/2, (rowFrom+rowTo)/2, 0, -3);
+    }
+}
+
 void reset() {
-    
+    wristMotor.moveTo(0);
+    shoulderAngle.moveTo(0);
+    elbowMotor.run(-elbowSpeed);
+    delay(elbowAngle*milsPerAngle);
+    elbowMotor.run(0);
+    elbowAngle = 0;
 }
 
 void goToPosition(int column, int row) {
-    wristMotor.moveTo(wristAngles[row][column/2]);
+    wristMotor.moveTo(-10);
     shoulderMotor.moveTo(shoulderAngles[row][column/2]);
     newElbowAngle = elbowAngles[row][column/2];
     elbowMotor.run(elbowSpeed);
@@ -42,8 +61,8 @@ void goToPosition(int column, int row) {
     elbowAngle = newElbowAngle;
 }
 
-void activateElbow() {
-    elbow.run(100);
+void lowerWrist(int column, int row) {
+    wristMotor.moveTo(wristAngles[row][column/2]);
 }
 
 double wristAngle(int i, int j) {
