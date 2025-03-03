@@ -1,0 +1,53 @@
+#include<WeELF328P.h>
+
+// Define the pins connected to the ULN2003 driver board
+#define IN1  5  // IN1 connected to Arduino pin 5
+#define IN2  6  // IN2 connected to Arduino pin 6
+#define IN3  7  // IN3 connected to Arduino pin 7
+#define IN4  8  // IN4 connected to Arduino pin 8
+
+const int PAUSE = 3;
+
+void setup() {
+    pinMode(IN1, OUTPUT);
+    pinMode(IN2, OUTPUT);
+    pinMode(IN3, OUTPUT);
+    pinMode(IN4, OUTPUT);
+}
+
+// Does a single step
+void step() {
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, LOW);
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, LOW);
+    delay(PAUSE);
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, HIGH);
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, LOW);
+    delay(PAUSE);
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, LOW);
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, LOW);
+    delay(PAUSE);
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, LOW);
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, HIGH);
+    delay(PAUSE);
+}
+
+// Calculate required amounts of steps to rotate by given angle (in radians) 
+void rotate(double angle) {
+    const int steps = (int)(angle/3.1416/2*1024);
+    for (int i = 0; i < steps; i++) {
+        step();
+    }
+}
+
+void loop() {
+    rotate(1.57f);
+    delay(1000);
+}
